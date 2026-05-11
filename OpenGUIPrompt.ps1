@@ -1,5 +1,11 @@
+<#.Name#>
+
+[CmdletBinding(PositionalBinding=$false)]
+
 Param(
-[string]$promptString    
+[Parameter(Mandatory=$true)]
+[ValidateNotNullOrEmpty()]
+[string]$promptString
 )
 
 Add-Type -AssemblyName Microsoft.visualBasic

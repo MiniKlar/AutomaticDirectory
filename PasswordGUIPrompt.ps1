@@ -1,3 +1,10 @@
+<#.Name#>
+
+if ($args.Count -gt 0) {
+    Write-Host "Usage: ./PasswordGUIPrompt.ps1"
+    exit 1
+}
+
 Add-Type -AssemblyName PresentationFramework
 
 $PresentationObject = New-Object System.Windows.Window
@@ -28,17 +35,17 @@ $Button.Add_Click({
     }
     elseif ($FirstPasswordObject.Password -eq $SecondPasswordObject.Password) {
         $PresentationObject.Close()
-        $FirstPasswordObject.Password
     }
     else {
         #Write-Host "Password not matching"
     }
 })
 
-$StackPanel.Children.Add($LabelObject)
-$StackPanel.Children.Add($FirstPasswordObject)
-$StackPanel.Children.Add($SecondPasswordObject)
-$StackPanel.Children.Add($Button)
+$StackPanel.Children.Add($LabelObject) | Out-Null
+$StackPanel.Children.Add($FirstPasswordObject) | Out-Null
+$StackPanel.Children.Add($SecondPasswordObject) | Out-Null
+$StackPanel.Children.Add($Button) | Out-Null
 
 $PresentationObject.AddChild($StackPanel)
-$PresentationObject.ShowDialog()
+$PresentationObject.ShowDialog() | Out-Null
+return $FirstPasswordObject.SecurePassword

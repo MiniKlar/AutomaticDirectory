@@ -1,8 +1,17 @@
-$script = $PSScriptRoot+"\OpenGUIPrompt.ps1"
+<#.Name#>
 
-$DomainAddress = & $script -promptString "Please enter the name of the new domain (ex: mydomain.local)"
-#$NetbiosName = & $script -promptString "Please enter the NetBIOS name of the new domain (ex: MYDOMAIN)"
+[CmdletBinding(PositionalBinding=$false)]
 
-$password = ConvertTo-SecureString $PSScriptRoot+"\PasswordGUIPrompt.ps1" -AsPlainText -Force
+Param(
+[Parameter(Mandatory=$true)]
+[ValidateNotNullOrEmpty()]
+[string]$DomainAddress,
+
+[Parameter(Mandatory=$true)]
+[ValidateNotNullOrEmpty()]
+[string]$NetbiosName
+)
+
+$password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"
     
-Install-ADDSForest -DomainName $DomainAddress -SafeModeAdministratorPassword $password -Force
+Install-ADDSForest -DomainName $DomainAddress -DomainNetbiosName $NetbiosName -SafeModeAdministratorPassword $password -Force
