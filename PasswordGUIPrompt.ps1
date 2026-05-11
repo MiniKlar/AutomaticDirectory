@@ -24,13 +24,14 @@ $Button.ClickMode = "Release"
 $Button.Background = "LightBlue"
 $Button.Add_Click({
     if ($FirstPasswordObject.Password -eq "" -or $SecondPasswordObject.Password -eq "") {
-        Write-Host "Password empty"
+        #Write-Host "Password empty"
     }
     elseif ($FirstPasswordObject.Password -eq $SecondPasswordObject.Password) {
         $PresentationObject.Close()
+        $FirstPasswordObject.Password
     }
     else {
-        Write-Host "Password not matching"
+        #Write-Host "Password not matching"
     }
 })
 
