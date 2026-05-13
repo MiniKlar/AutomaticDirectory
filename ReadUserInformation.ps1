@@ -8,7 +8,7 @@ param(
     
     [Parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
-    [string]$AttributeName
+    [string]$Attributes
 )
 
 # Ensure the ActiveDirectory module is available
@@ -27,13 +27,26 @@ catch {
     exit 1
 }
 
+if ($Attributes -notmatch '^[a-zA-Z0-9_,]+$') {
+    Write-Error "Please enter valid attributes"
+    exit 1
+}
+
+$AttributeArray = $Attributes -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" } | Select-Object -Unique
+
 try {
-    $value = (Get-ADUser $AccountName -Properties $AttributeName).$AttributeName
-    if ([string]::IsNullOrWhiteSpace($value)) {
-        Write-Host "'$AccountName' $AttributeName isn't set" -ForegroundColor DarkYellow
-    }
-    else {
-        Write-Host "'$AccountName' $AttributeName : $Value" -ForegroundColor Green
+    $values = (Get-ADUser $AccountName -Properties $AttributeArray)
+    $values = $values | Select-Object $AttributeArray
+
+    foreach ($attr in $AttributeArray) {
+        $value = ($values | Select-Object $attr).$attr
+
+        if ([string]::IsNullOrWhiteSpace($value)) {
+            Write-Host "'$AccountName' $attr isn't set" -ForegroundColor DarkYellow
+        }
+        else {
+            Write-Host "'$AccountName' $attr : $Value" -ForegroundColor Green
+        }
     }
 }
 catch {
