@@ -34,7 +34,7 @@ catch {
     exit 1
 }
 
-# Create the AD user
+# Create the AD group
 try {
     New-ADGroup `
         -Name $GroupName `
@@ -47,6 +47,3 @@ try {
 } catch {
     Write-Error "Failed to create group: $_"
 }
-
-
-# Add to groups
