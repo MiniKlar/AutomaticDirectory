@@ -15,6 +15,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Acccount exists
 try {
     Get-ADUser -Identity $AccountName -ErrorAction Stop | Out-Null
 }
@@ -23,11 +24,13 @@ catch {
     exit 1
 }
 
+# Retrieve new password with custom window
 $scriptPassword = $PSScriptRoot+"\PasswordGUIPrompt.ps1"
 
 # Prompt for user details
 $NewPassword  = & $scriptPassword
 
+# Reset the specified user's password and make sure the account is active
 try {
     Set-ADAccountPassword `
         -Identity $AccountName `

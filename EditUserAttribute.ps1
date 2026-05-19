@@ -23,6 +23,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Acccount exists
 try {
     Get-ADUser -Identity $AccountName -ErrorAction Stop | Out-Null
 }
@@ -31,6 +32,7 @@ catch {
     exit 1
 }
 
+# Modify attribute from Account
 try {
     Set-ADUser `
         -Identity $AccountName `

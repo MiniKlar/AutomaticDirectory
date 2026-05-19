@@ -15,6 +15,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Group exists
 try {
     Get-ADGroup -Identity $GroupName -ErrorAction Stop | Out-Null
 }
@@ -23,6 +24,7 @@ catch {
     exit 1
 }
 
+# List Group members
 try {
     Get-ADGroupMember $GroupName
 } catch {

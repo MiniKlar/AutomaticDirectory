@@ -20,6 +20,7 @@ catch {
 # Check if the server is already part of a domain
 $InDomain = Get-CimInstance -ClassName Win32_ComputerSystem
 
+# Check if the system is already in a domain
 if ($InDomain.PartOfDomain) {
     Write-Output "This server has already joined a domain."
     exit 1
@@ -32,8 +33,9 @@ if ($InDomain.PartOfDomain) {
 # Promote the AD server to Domain Controller for the specific domain
 
 $cred = Get-Credential
+
+# Retrieve password with custom window
 $password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"
 
+# Join the Forest
 Install-ADDSDomainController -DomainName $DomainAddress -SafeModeAdministratorPassword $password -Credential $cred
-
-exit 0

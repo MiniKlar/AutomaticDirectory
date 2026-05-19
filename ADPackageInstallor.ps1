@@ -1,7 +1,6 @@
 <#.Name#>
 
 # Install ActiveDirectory and the needed dependencies for the domain controller role
-
 try {
     $var = Get-WindowsFeature -Name AD-Domain-Services | Select-Object -Property InstallState
     if ($var.InstallState -eq "Installed") {
@@ -15,7 +14,6 @@ try {
 Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
 
 # Check if the module is installed and available for use
-
 Get-Command -Module ADDSDeployment
 
 exit 0

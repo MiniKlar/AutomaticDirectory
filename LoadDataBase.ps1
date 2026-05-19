@@ -12,10 +12,8 @@ Param(
 [char]$FileDelimiter
 )
 
-# Load database 
-
+# Load database
 $FileOutput = Import-Csv -Delimiter $FileDelimiter -Path $PathToLoad
 
+# Write everything to the user
 Write-Host $FileOutput
-
-exit 0

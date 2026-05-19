@@ -19,6 +19,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Acccount exists
 try {
     Get-ADUser -Identity $AccountName -ErrorAction Stop | Out-Null
 }
@@ -27,13 +28,16 @@ catch {
     exit 1
 }
 
+# Ensure Attributes only contains letters/numbers
 if ($Attributes -notmatch '^[a-zA-Z0-9_,]+$') {
     Write-Error "Please enter valid attributes"
     exit 1
 }
 
+# Split Attributes into an array
 $AttributeArray = $Attributes -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" } | Select-Object -Unique
 
+# List every wanted Attributes from wanted user
 try {
     $values = (Get-ADUser $AccountName -Properties $AttributeArray)
     $values = $values | Select-Object $AttributeArray

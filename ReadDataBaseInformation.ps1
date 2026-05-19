@@ -15,14 +15,19 @@ try {
     exit 1
 }
 
+# Ensure Attributes only contains letters/numbers
 if ($Attributes -notmatch '^[a-zA-Z0-9_,]+$') {
     Write-Error "Please enter valid attributes"
     exit 1
 }
 
+# Split Attributes into an array
 $AttributeArray = $Attributes -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" } | Select-Object -Unique
+
+# Get every known users
 $UserArray = (Get-ADUser -Filter * -Properties SamAccountName).SamAccountName
 
+# List every wanted Attributes for every known users
 foreach($user in $UserArray){
     try {
         $values = (Get-ADUser $user -Properties $AttributeArray)

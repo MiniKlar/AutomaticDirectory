@@ -17,6 +17,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Group exists
 try {
     Get-ADGroup -Identity $GroupName -ErrorAction Stop | Out-Null
 }
@@ -25,7 +26,7 @@ catch {
     exit 1
 }
 
-# Replace attributes by '*' if empty
+# Replace Attributes by '*' if empty and ensure Attributes only contains letters/numbers
 if ([string]::IsNullOrWhiteSpace($Attributes)) {
     $Attributes = "*"
 } elseif ($Attributes -notmatch '^[a-zA-Z0-9_,]+$') {
@@ -33,8 +34,10 @@ if ([string]::IsNullOrWhiteSpace($Attributes)) {
     exit 1
 }
 
+# Split Attributes into an array
 $AttributeArray = $Attributes -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" } | Select-Object -Unique
 
+# List every wanted Attributes from wanted group
 try {
     if ($AttributeArray -contains "*") {
         Get-ADGroup $GroupName -Properties $AttributeArray

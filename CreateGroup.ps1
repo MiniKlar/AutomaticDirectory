@@ -26,6 +26,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Organizational Unit exists
 try {
     Get-ADOrganizationalUnit -Identity $OU -ErrorAction Stop | Out-Null
 }

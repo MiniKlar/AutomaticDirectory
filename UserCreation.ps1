@@ -23,6 +23,7 @@ try {
     exit 1
 }
 
+# Ensure the specified Organizational Unit exists
 try {
     Get-ADOrganizationalUnit -Identity $OU -ErrorAction Stop | Out-Null
 }
@@ -46,8 +47,10 @@ if ([string]::IsNullOrWhiteSpace($FirstName) -or
     exit 1
 }
 
+# Get the DNS
 $domain = (Get-ADDomain).DNSRoot
 
+# Create mail
 $mail = "$($FirstName.ToLower()).$($LastName.ToLower())@$domain"
 
 # Create the AD user
