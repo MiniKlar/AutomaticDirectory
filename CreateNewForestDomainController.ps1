@@ -12,13 +12,12 @@ Param(
 [string]$NetbiosName
 )
 
-# Check if we can import the AD module to know if we have correctly installed the AD. This allow us to check if we can create a Forest.
-
+# Ensure the ADDSDeployment module is available
 try {
-    Import-Module ActiveDirectory -ErrorAction Stop
+    Import-Module ADDSDeployment -ErrorAction Stop
 }
 catch {
-    Write-Error "Failed to import ActiveDirectory module. Ensure you have the necessary permissions and that the module is installed on your server."
+    Write-Error "Failed to import ADDSDeployment module. Ensure you have the necessary permissions and the module is installed."
     exit 1
 }
 
@@ -27,14 +26,14 @@ catch {
 try {
     Get-ADForest
 } catch {
-    Write-Host "You are already in a forest"
+    Write-Error "The domain '$DomainAddress' is not reachable or does not exist."
     exit 1
 }
 
-# Install the Forest
-
+# Retrieve password with custom window
 $password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"
-    
+
+# Promote the Active Directory to a Forest Domain Controller
 Install-ADDSForest -DomainName $DomainAddress -DomainNetbiosName $NetbiosName -SafeModeAdministratorPassword $password -Force
 
 exit 0

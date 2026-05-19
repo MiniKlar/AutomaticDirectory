@@ -8,8 +8,16 @@ Param(
 [string]$DomainAddress
 )
 
-# Check if the server is already part of a domain
+# Ensure the ADDSDeployment module is available
+try {
+    Import-Module ADDSDeployment -ErrorAction Stop
+}
+catch {
+    Write-Error "Failed to import ADDSDeployment module. Ensure you have the necessary permissions and the module is installed."
+    exit 1
+}
 
+# Check if the server is already part of a domain
 $InDomain = Get-CimInstance -ClassName Win32_ComputerSystem
 
 if ($InDomain.PartOfDomain) {
@@ -18,7 +26,7 @@ if ($InDomain.PartOfDomain) {
 } else {
     Write-Output "This server is not part of a domain."
     $cred = Get-Credential # Warning: Input the primary DC's credentials
-    Add-Computer -DomainName test.com -Credential $cred -Force -Restart
+    Add-Computer -DomainName $DomainAddress -Credential $cred -Force -Restart
 }
 
 # Promote the AD server to Domain Controller for the specific domain
