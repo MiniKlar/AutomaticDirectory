@@ -9,33 +9,29 @@ Param(
 
 [Parameter(Mandatory=$true)]
 [ValidateNotNullOrEmpty()]
-<<<<<<< Updated upstream
-[char]$DesiredDelimiter
-)
-#Auto error handeling if a char is not passed as a parameter
-
-Get-ADUser -Filter * | Export-Csv -Path $PathToSave -Delimiter $DesiredDelimiter
-
-"#TYPE Microsoft.ActiveDirectory.Management.ADGroup" | Add-Content -Path $PathToSave
-
-Get-ADGroup -Filter * | Export-Csv -Path $PathToSave -Delimiter $DesiredDelimiter -Append -Force
-=======
 [char]$DesiredDelimiter,
 
 [Parameter(Mandatory=$true)]
 [ValidateNotNullOrEmpty()]
-[String[]]$UserProperties,
-
-[Parameter(Mandatory=$true)]
-[ValidateNotNullOrEmpty()]
-[String[]]$GroupProperties
+[String[]]$Properties
 )
 
 #Auto error handeling if a char is not passed as a parameter
 
-$Users = Get-ADUser -Filter * -Properties $UserProperties | Select-Object $UserProperties | Export-Csv -NoTypeInformation -Path $PathToSave -Delimiter $DesiredDelimiter
+$Properties = $Properties -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" } | Select-Object -Unique
 
-#"#TYPE Microsoft.ActiveDirectory.Management.ADGroup" | Add-Content -Path $PathToSave
+$AllPropertiesUser = (Get-ADUser -Filter * -Properties * | Get-Member -MemberType Properties).Name
+$AllPropertiesGroup = (Get-ADGroup -Filter * -Properties * | Get-Member -MemberType Properties).Name
 
-$Groups = Get-ADGroup -Filter * -Properties $GroupProperties | Select-Object $GroupProperties | Export-Csv -NoTypeInformation -Path $PathToSave -Delimiter $DesiredDelimiter -Append -Force
->>>>>>> Stashed changes
+$UserProperties = $Properties | Where-Object { $_ -in $AllPropertiesUser }
+$GroupProperties = $Properties | Where-Object { $_ -in $AllPropertiesGroup }
+
+$Users = Get-ADUser -Filter * -Properties $UserProperties | Select-Object $Properties #Export-Csv -NoTypeInformation -Path $PathToSave -Delimiter $DesiredDelimiter
+
+$Groups = Get-ADGroup -Filter * -Properties $GroupProperties | Select-Object $GroupProperties #Export-Csv -NoTypeInformation -Path $PathToSave -Delimiter $DesiredDelimiter -Append
+
+$all = $Users + $Groups
+
+$all | Export-Csv -NoTypeInformation -Path $PathToSave -Delimiter $DesiredDelimiter
+
+exit 0

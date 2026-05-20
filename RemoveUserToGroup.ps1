@@ -15,16 +15,18 @@ Param(
 try {
     Get-ADUser -Identity $UserName | Out-Null
 } catch {
-    Write-Host "User does not exist."
+    Write-Host "User $UserName does not exist."
     exit 1
 }
 
-$var = (Get-ADGroupMember -Identity gg | Select-Object -Property name).name
+$var = (Get-ADGroupMember -Identity $GroupName | Select-Object -Property SamAccountName | Where-Object -Property SamAccountName -Match -Value $UserName).SamAccountName
 
 if ([string]::IsNullOrWhiteSpace($var)) {
-    Write-Host "User is not in the group."
+    Write-Host "$UserName is not in $GroupName group."
     exit 1
 }
 
 Remove-ADGroupMember -Identity $GroupName -Members $UserName
 Write-Host "$UserName has been deleted from $GroupName!"
+
+exit 0

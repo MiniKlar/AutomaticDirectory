@@ -32,7 +32,7 @@ try {
        throw
     }
 } catch {
-    Write-Host "User is already in $GroupName group"
+    Write-Host "User $UserName is already in $GroupName group"
     exit 1
 }
 

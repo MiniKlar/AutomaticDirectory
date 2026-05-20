@@ -17,3 +17,9 @@ Param(
 )
 
 Set-ADGroup -Identity $GroupName -Replace @{$AttributeName = $AttributeValue}
+
+if ($?) {
+    Write-Host "The attribute $AttributeName has correctly been set to '$AttributeValue'."
+}
+
+exit 0

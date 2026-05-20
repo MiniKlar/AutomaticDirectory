@@ -15,3 +15,5 @@ Param(
 $FileOutput = Import-Csv -Delimiter $FileDelimiter -Path $PathToLoad
 
 Write-Host $FileOutput
+
+exit 0
