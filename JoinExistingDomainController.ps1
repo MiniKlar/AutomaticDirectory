@@ -17,25 +17,45 @@ catch {
     exit 1
 }
 
-# Check if the server is already part of a domain
-$InDomain = Get-CimInstance -ClassName Win32_ComputerSystem
-
-# Check if the system is already in a domain
-if ($InDomain.PartOfDomain) {
-    Write-Output "This server has already joined a domain."
+# Check if the server is already in a Forest
+try {
+    Get-ADForest -ErrorAction Stop | Out-Null
+    Write-Error "The server is already in a Forest."
     exit 1
-} else {
-    Write-Output "This server is not part of a domain."
-    $cred = Get-Credential # Warning: Input the primary DC's credentials
-    Add-Computer -DomainName $DomainAddress -Credential $cred -Force -Restart
+} catch {}
+
+# Try to resolve the domain to configure DNS automatically
+try {
+    $resolved = Resolve-DnsName -Name $DomainAddress -ErrorAction Stop
+} catch {
+    Write-Host "Unable to resolve $DomainAddress. Searching for a DNS server via network (subnet)..."
+    $PrimaryDCIP = & "$PSScriptRoot/OpenGUIPrompt.ps1" -promptString "Enter the IP address of a domain controller for $DomainAddress :"
+    
+    if ($PrimaryDCIP) {
+        $Interface = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -First 1
+        Set-DnsClientServerAddress -InterfaceIndex $Interface.InterfaceIndex -ServerAddresses $PrimaryDCIP
+        Write-Host "DNS configured on $PrimaryDCIP"
+    }
 }
 
-# Promote the AD server to Domain Controller for the specific domain
+try {
+    # Get domain administrator credentials
+    Write-Host "Please provide credentials for an administrator of domain $DomainAddress"
+    $cred = Get-Credential
 
-$cred = Get-Credential
+    # Get DSRM password
+    Write-Host "Please enter the DSRM password (Safe Mode)."
+    $dsrmPassword = & "$PSScriptRoot/PasswordGUIPrompt.ps1"
 
-# Retrieve password with custom window
-$password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"
+    # Promote as an additional DC
+    Install-ADDSDomainController `
+        -DomainName $DomainAddress `
+        -SafeModeAdministratorPassword $dsrmPassword `
+        -Credential $cred
+} catch {
+    Write-Error "Promotion failed: $($_.Exception.Message)"
+    exit 1
+}
 
-# Join the Forest
-Install-ADDSDomainController -DomainName $DomainAddress -SafeModeAdministratorPassword $password -Credential $cred
+Write-Host "Promotion successful. The server will restart."
+exit 0
