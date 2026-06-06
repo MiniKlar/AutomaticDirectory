@@ -16,7 +16,7 @@ Param(
 [String[]]$Properties
 )
 
-#Auto error handeling if a char is not passed as a parameter
+# Save database according to the Properties given by the user
 
 $Properties = $Properties -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" } | Select-Object -Unique
 

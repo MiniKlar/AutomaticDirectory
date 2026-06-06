@@ -12,6 +12,8 @@ Param(
 [string]$NetbiosName
 )
 
+# Check if we can import the AD module to know if we have correctly installed the AD. This allow us to check if we can create a Forest.
+
 try {
     Import-Module ActiveDirectory -ErrorAction Stop
 }
@@ -20,12 +22,16 @@ catch {
     exit 1
 }
 
+# Check if the server is already in a Forest
+
 try {
-    Get-ADForest #check if this is working when server is not in a forest
+    Get-ADForest
 } catch {
     Write-Host "You are already in a forest"
     exit 1
 }
+
+# Install the Forest
 
 $password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"
     

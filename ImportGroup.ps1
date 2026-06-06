@@ -12,6 +12,8 @@ Param(
 [string]$DestinationGroup
 )
 
+# Check if the source group exists
+
 try {
     Get-ADGroup -Identity $SourceGroup | Out-Null
 } catch {
@@ -19,12 +21,16 @@ try {
    exit 1
 }
 
+# Check if the destination group exists
+
 try {
     Get-ADGroup -Identity $DestinationGroup | Out-Null
 } catch {
    Write-Host "The destination group does not exist."
    exit 1
 }
+
+# Copy all the users from the source group to the destination group
 
 $Users = Get-ADGroupMember -Identity $SourceGroup
 

@@ -8,6 +8,8 @@ Param(
 [string]$DomainAddress
 )
 
+# Check if the server is already part of a domain
+
 $InDomain = Get-CimInstance -ClassName Win32_ComputerSystem
 
 if ($InDomain.PartOfDomain) {
@@ -15,10 +17,11 @@ if ($InDomain.PartOfDomain) {
     exit 1
 } else {
     Write-Output "This server is not part of a domain."
-    #Credentials of the primary DC
-    $cred = Get-Credential
+    $cred = Get-Credential # Warning: Input the primary DC's credentials
     Add-Computer -DomainName test.com -Credential $cred -Force -Restart
 }
+
+# Promote the AD server to Domain Controller for the specific domain
 
 $cred = Get-Credential
 $password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"

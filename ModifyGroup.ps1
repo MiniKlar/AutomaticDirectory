@@ -16,6 +16,7 @@ Param(
 [string]$AttributeValue
 )
 
+# Modify an attribute of a group
 Set-ADGroup -Identity $GroupName -Replace @{$AttributeName = $AttributeValue}
 
 if ($?) {

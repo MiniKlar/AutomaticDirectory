@@ -12,6 +12,7 @@ Param(
 [string]$GroupName
 )
 
+# Check if the user exists.
 try {
     Get-ADUser -Identity $UserName | Out-Null
 } catch {
@@ -19,6 +20,7 @@ try {
     exit 1
 }
 
+# Check if the group exists.
 try {
     Get-ADGroup -Identity $GroupName | Out-Null
 } catch {
@@ -26,6 +28,7 @@ try {
     exit 1
 }
 
+# Check if the user is already in the group
 try {
     $var = Get-ADGroupMember -Identity $GroupName | Select-Object -Property "SamAccountName"
     if ($var.SamAccountName -eq "$UserName") {
@@ -36,6 +39,7 @@ try {
     exit 1
 }
 
+# Add the user in the group
 Add-ADGroupMember -Identity $GroupName -Members $UserName
 Write-Host "$UserName has been added to $GroupName!"
 exit 0
