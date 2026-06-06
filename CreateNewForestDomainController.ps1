@@ -24,11 +24,10 @@ catch {
 # Check if the server is already in a Forest
 
 try {
-    Get-ADForest
-} catch {
-    Write-Error "The domain '$DomainAddress' is not reachable or does not exist."
+    Get-ADForest -ErrorAction Stop | Out-Null
+    Write-Error "The server is already in a Forest."
     exit 1
-}
+} catch {}
 
 # Retrieve password with custom window
 $password = & $PSScriptRoot"\PasswordGUIPrompt.ps1"
