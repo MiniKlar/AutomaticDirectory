@@ -32,6 +32,14 @@ catch {
     exit 1
 }
 
+# Ensure the specified Group exists
+try {
+    Get-ADGroup -Identity $GroupName | Out-Null
+} catch {
+    Write-Host "Group does not exist."
+    exit 1
+}
+
 $script = $PSScriptRoot+"\OpenGUIPrompt.ps1"
 $scriptPassword = $PSScriptRoot+"\PasswordGUIPrompt.ps1"
 
@@ -74,4 +82,5 @@ try {
 }
 
 
-# Add to groups
+$addGroup = $PSScriptRoot+"\AddUserToGroup.ps1"
+& $addGroup -UserName  $AccountName -GroupName $Group
