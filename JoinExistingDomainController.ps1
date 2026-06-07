@@ -53,6 +53,23 @@ try {
     Write-Host "Please provide credentials for an administrator of domain $DomainAddress"
     $cred = Get-Credential
 
+    # Normalize the user name to the "long" (FQDN) form, e.g. toutexiste.com\Administrator.
+    # Install-ADDSDomainController fails with RPC error 1749 ("The security context is
+    # invalid") and hangs at "Creating the NTDS settings object" when given a bare or
+    # NetBIOS-style name (Administrator / DOMAIN\Administrator). The GUI wizard normalizes
+    # this automatically; the cmdlet does not.
+    $userName = $cred.UserName
+    if ($userName -notmatch '[\\@]') {
+        # Bare "Administrator" -> prepend the domain FQDN
+        $userName = "$DomainAddress\$userName"
+    } elseif ($userName -match '^[^\\]+\\(.+)$') {
+        # "DOMAIN\Administrator" (NetBIOS) -> rebuild with the domain FQDN
+        $userName = "$DomainAddress\$($Matches[1])"
+    }
+    if ($userName -ne $cred.UserName) {
+        $cred = New-Object System.Management.Automation.PSCredential($userName, $cred.Password)
+    }
+
     # Get DSRM password
     Write-Host "Please enter the DSRM password (Safe Mode)."
     $dsrmPassword = & "$PSScriptRoot/PasswordGUIPrompt.ps1"
