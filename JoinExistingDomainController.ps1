@@ -17,12 +17,11 @@ catch {
     exit 1
 }
 
-# Check if the server is already in a Forest
-try {
-    Get-ADForest -ErrorAction Stop | Out-Null
-    Write-Error "The server is already in a Forest."
+# Check if the server is already a domain controller
+if ((Get-CimInstance Win32_OperatingSystem).ProductType -eq 2) {
+    Write-Error "This server is already a domain controller."
     exit 1
-} catch {}
+}
 
 # Try to resolve the domain to configure DNS automatically
 try {
@@ -32,9 +31,20 @@ try {
     $PrimaryDCIP = & "$PSScriptRoot/OpenGUIPrompt.ps1" -promptString "Enter the IP address of a domain controller for $DomainAddress :"
     
     if ($PrimaryDCIP) {
-        $Interface = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -First 1
-        Set-DnsClientServerAddress -InterfaceIndex $Interface.InterfaceIndex -ServerAddresses $PrimaryDCIP
-        Write-Host "DNS configured on $PrimaryDCIP"
+        try {
+            $Interface = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -First 1
+            if (-not $Interface) {
+                throw "No active (Up) network adapter found."
+            }
+            Set-DnsClientServerAddress -InterfaceIndex $Interface.InterfaceIndex -ServerAddresses $PrimaryDCIP -ErrorAction Stop
+            Write-Host "DNS configured on $PrimaryDCIP"
+        } catch {
+            Write-Error "Failed to configure DNS: $($_.Exception.Message)"
+            exit 1
+        }
+    } else {
+        Write-Error "No domain controller IP provided. Cannot proceed."
+        exit 1
     }
 }
 
@@ -48,14 +58,19 @@ try {
     $dsrmPassword = & "$PSScriptRoot/PasswordGUIPrompt.ps1"
 
     # Promote as an additional DC
+    # -Force suppresses the interactive confirmation prompt that would otherwise
+    # block the cmdlet indefinitely while configuring AD DS.
     Install-ADDSDomainController `
         -DomainName $DomainAddress `
         -SafeModeAdministratorPassword $dsrmPassword `
-        -Credential $cred
+        -Credential $cred `
+        -Force
 } catch {
     Write-Error "Promotion failed: $($_.Exception.Message)"
     exit 1
 }
 
+# Note: Install-ADDSDomainController restarts the server on success, so execution
+# typically does not reach this point.
 Write-Host "Promotion successful. The server will restart."
 exit 0
